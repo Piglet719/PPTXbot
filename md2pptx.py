@@ -21,13 +21,16 @@ class MarkdownHTMLParser(HTMLParser):
         self.list_counter = 0
         self.last_tag = None
         self.bold = False
-        self.current_href = None  # To store URL for hyperlinks
+        self.current_href = None
 
     def add_or_duplicate_slide(self):
         if self.current_slide_index < len(self.presentation.slides):
             self.current_slide = self.presentation.slides[self.current_slide_index]
         else:
-            last_layout = self.presentation.slides[-1].slide_layout
+            if len(self.presentation.slides) > 0:
+                last_layout = self.presentation.slides[-1].slide_layout
+            else:
+                last_layout = self.presentation.slide_layouts[0]
             self.current_slide = self.presentation.slides.add_slide(last_layout)
         self.title_placeholder = self.current_slide.shapes.title
         self.text_placeholder = self.current_slide.placeholders[1]
@@ -58,7 +61,7 @@ class MarkdownHTMLParser(HTMLParser):
         elif tag in ["strong", "b"]:
             self.bold = True
         elif tag == "a":
-            self.current_href = dict(attrs).get("href", "")  # Extract href attribute
+            self.current_href = dict(attrs).get("href", "")
 
     def handle_endtag(self, tag):
         if tag in ["ul", "ol"]:
@@ -67,7 +70,7 @@ class MarkdownHTMLParser(HTMLParser):
         elif tag in ["strong", "b"]:
             self.bold = False
         elif tag == "a":
-            self.current_href = None  # Reset hyperlink after closing tag
+            self.current_href = None 
 
     def handle_data(self, data):
         if self.current_paragraph:
@@ -75,13 +78,15 @@ class MarkdownHTMLParser(HTMLParser):
             run.text = data.strip()
             if self.bold:
                 run.font.bold = True
-            if self.current_href:  # Apply hyperlink if href is set
+            if self.current_href:
                 run.hyperlink.address = self.current_href
 
-def convert_markdown_to_pptx(markdown_text, template):
+def convert_markdown_to_pptx(markdown_text, template=None):
     markdown = Markdown(output_format='html')
     html_content = markdown.convert(markdown_text)
-    prs = Presentation(template)
+    prs = Presentation(template) if template else Presentation()
+    if not prs.slides:
+        prs.slides.add_slide(prs.slide_layouts[0])
     parser = MarkdownHTMLParser(prs)
     parser.feed(html_content)
     prs.save('test.pptx')
