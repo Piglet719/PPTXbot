@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>View Files</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <h1>View Files in S3</h1>
+    <form action="{{ url_for('view_files') }}" method="post">
+        <label for="selected_file">Select PDF File:</label>
+        <select id="selected_file" name="selected_file">
+            {% for file in pdf_files %}
+            <option value="{{ file }}">{{ file }}</option>
+            {% endfor %}
+        </select><br><br>
+        <input type="submit" value="View File">
+    </form>
+    {% if request.method == 'POST' %}
+    <h2>PDF Preview</h2>
+    <img src="{{ url_for('view_files') }}" alt="PDF Preview">
+    {% endif %}
+</body>
+
+</html>

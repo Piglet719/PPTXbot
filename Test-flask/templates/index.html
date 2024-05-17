@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cloud Project</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <h1>Welcome to the Cloud Project</h1>
+    <nav>
+        <a href="{{ url_for('create_ppt') }}">Create PPT</a>
+        <a href="{{ url_for('upload_file') }}">Upload File</a>
+        <a href="{{ url_for('view_files') }}">View Files</a>
+        <a href="{{ url_for('chat') }}">Chat</a>
+    </nav>
+</body>
+
+</html>
