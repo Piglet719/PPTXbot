@@ -45,13 +45,17 @@ def create_ppt():
                 )
         result = json.loads(result['Payload'].read().decode("utf-8"))
         answer = result['body']['answer']
-        pptx_file = convert_markdown_to_pptx(answer, template)
-
-        session['sessionId'] = result['body']['sessionId']
-
+        
+        # Convert Markdown to PPTX
+        pptx_path = convert_markdown_to_pptx(answer, template)
+        
+        # Read the PPTX file
         pptx_io = BytesIO()
-        pptx_file.save(pptx_io)
+        with open(pptx_path, "rb") as f:
+            pptx_io.write(f.read())
         pptx_io.seek(0)
+        
+        session['sessionId'] = result['body']['sessionId']
 
         return send_file(pptx_io, as_attachment=True, download_name='presentation.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')
 
