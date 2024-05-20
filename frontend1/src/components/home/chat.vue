@@ -11,7 +11,7 @@
 
     <div v-show="showQuestionHistory" class="question-history-container">
       <div class="question-history">
-        <div v-for="(question, index) in questions" :key="index" class="question" :style="{ width: '200px', height: getHeight(question) + 'px' }">
+        <div v-for="(question, index) in questions" :key="index" class="question" :style="{ width: '400px', height: getHeight(question) + 'px' }">
           {{ question }}
         </div>
       </div>
@@ -53,13 +53,33 @@ function sendMessage() {
     .catch(error => {
       console.error('Error sending message:', error);
     });
+
+    nextTick(() => {
+      adjus
+    })
   }
 }
 
 function getHeight(question) {
-  const lineHeight = 20; // 假設每個字符的高度為 20px
-  const lines = Math.max(Math.ceil(question.length / 100), 1); // 每行的最大寬度為 200px
-  return lines * lineHeight;
+  const maxWidth = 400; // 固定宽度 200px
+  const lineHeight = 20; // 假设每行高度为 20px
+
+  // 创建一个临时的隐藏元素用于测量实际高度
+  const tempDiv = document.createElement('div');
+  tempDiv.style.position = 'absolute';
+  tempDiv.style.visibility = 'hidden';
+  tempDiv.style.width = `${maxWidth}px`;
+  tempDiv.style.fontSize = '14px';
+  tempDiv.style.lineHeight = `${lineHeight}px`;
+  tempDiv.style.whiteSpace = 'pre-wrap'; // 保持空白和换行符
+  tempDiv.style.wordWrap = 'break-word'; // 自动换行
+  tempDiv.innerText = question;
+
+  document.body.appendChild(tempDiv);
+  const height = tempDiv.scrollHeight; // 获取内容的高度
+  document.body.removeChild(tempDiv);
+
+  return height;
 }
 </script>
 
@@ -120,6 +140,5 @@ function getHeight(question) {
   border-radius: 5px;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 5px;
-  position: relative; /* 設置為相對定位，以便使用 top 屬性調整垂直位置 */
 }
 </style>

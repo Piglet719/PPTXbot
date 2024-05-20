@@ -1,31 +1,42 @@
 <template>
     <!-- <div id="footer"> -->
     <div class="input-section">
-        <input type="text" placeholder="Input here..." />
+        <input v-model="message" type="text" placeholder="Input here..." v-on:keyup.enter="sendMessenges" />
         <button class="send-btn">
-            <img src="@/components/home/content/assets/send_msg.png" />
+            <img @click="sendMessenges" src="@/components/home/content/assets/send_msg.png" />
         </button>
     </div>
     <!-- </div> -->
   </template>
   
-  <script>
-  export default {
-    name: 'UploadPage',
-    methods: {
-      selectFile() {
-        this.$refs.fileInput.click();
-      },
-      handleFileUpload(event) {
-        const file = event.target.files[0];
-        if (file) {
-          console.log('File selected:', file);
-          // 在這裡處理文件上傳邏輯
-        }
-      },
-    },
-  };
-  </script>
+  <script setup>
+  import { ref, onMounted, inject } from "vue";
+  // export default {
+  //   name: 'UploadPage',
+  //   methods: {
+  //     selectFile() {
+  //       this.$refs.fileInput.click();
+  //     },
+  //     handleFileUpload(event) {
+  //       const file = event.target.files[0];
+  //       if (file) {
+  //         console.log('File selected:', file);
+  //         // 在這裡處理文件上傳邏輯
+  //       }
+  //     },
+  //   },
+  // };
+const message = ref("");
+
+const emit = defineEmits(["sendMessenges"]);
+
+  function sendMessenges(){
+    const sendMessage = message.value;
+    message.value="";
+    emit("sendMessenges",sendMessage);
+    // console.log(sendMessage)
+  }
+</script>
   
 <style>
 .input-section input {
