@@ -1,21 +1,22 @@
 import os
 from PyPDF2 import PdfReader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
 import streamlit as st
-import google.generativeai as genai
 from langchain_community.vectorstores import FAISS
-from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 from md2pptx import convert_markdown_to_pptx
+import boto3
+from langchain_community.embeddings import BedrockEmbeddings
+from langchain.indexes import VectorstoreIndexCreator
+from langchain_community.document_loaders import PyPDFLoader
+from langchain_aws import BedrockLLM
 
 load_dotenv()
-os.getenv("GOOGLE_API_KEY")
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-# read all pdf files and return text
+region = boto3.Session().region_name
+session = boto3.Session(region_name=region)
 
 
 def get_pdf_text(pdf_docs):
@@ -39,8 +40,7 @@ def get_text_chunks(text):
 
 
 def get_vector_store(chunks):
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001")  # type: ignore
+    embeddings = BedrockEmbeddings()
     vector_store = FAISS.from_texts(chunks, embedding=embeddings)
     vector_store.save_local("faiss_index")
 
@@ -57,13 +57,13 @@ def get_conversational_chain():
     - **Keyword2**: Description2.
     """
 
-    model = ChatGoogleGenerativeAI(model="gemini-pro",
-                                   client=genai,
-                                   temperature=0.3,
-                                   )
+    model = BedrockLLM(
+        model_id="anthropic.claude-instant-v1")
+
     prompt = PromptTemplate(template=prompt_template,
                             input_variables=["context"])
     chain = load_qa_chain(llm=model, chain_type="stuff", prompt=prompt)
+    print(chain)
     return chain
 
 
@@ -73,10 +73,9 @@ def clear_chat_history():
 
 
 def user_input(user_question):
-    embeddings = GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001")  # type: ignore
+    embeddings = BedrockEmbeddings()
 
-    new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True) 
+    new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
 
     chain = get_conversational_chain()
@@ -108,7 +107,7 @@ def main():
                 st.success("Done")
 
     # Main content area for displaying chat messages
-    st.title("Chat with PDF files using Gemini🤖")
+    st.title("PowerPaper🤖")
     st.write("Welcome to the chat!")
     st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
@@ -123,7 +122,7 @@ def main():
         with st.chat_message(message["role"]):
             st.write(message["content"])
 
-    if prompt := st.chat_input():
+    if prompt := st.chat_input(placeholder="是否對ppt有特別的指示"):
         st.session_state.messages.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.write(prompt)
