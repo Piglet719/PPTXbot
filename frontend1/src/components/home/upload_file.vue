@@ -19,67 +19,108 @@
       重新匯入PDF
     </button>
   </div>
+
+  <div v-show="contentType == 2">
+    <div class="Reupload-section">
+      <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
+      請選擇是否要匯入PPT模板
+    </div>
+    <div class="actions">
+      <input type="file" ref="pptInput" @change="handlePPTUpload" style="display: none" />
+      <button class="action-btn" @click="triggerPPTInput">
+        Yes(ppt/pptx)
+      </button>
+      <button class="action-btn" @click="changeContentType(3)">
+        No
+      </button>
+    </div>
+    <button class="pdf-input" @click="changeContentType(0)">
+      重新匯入PDF
+    </button>
+  </div>
 </template>
 
 <script setup>
-import { ref, watch, defineProps } from 'vue';
-
-const props = defineProps({
-  changeContentType: {
-    type: Function,
-    required: true,
-  },
-});
+import { ref, onMounted, inject, defineProps, provide } from "vue";
 
 const contentType = ref(0);
 const fileInput = ref(null);
+const pptInput = ref(null);
+const uploading = ref(false);
+const pptFenerated = ref(false);
 
-watch(() => contentType.value, (newValue) => {
-  if (newValue === 1) {
-    // Mock analysis delay
-    setTimeout(() => props.changeContentType(2), 2000);
-  }
+const props = defineProps({
+  contentType: Number
 });
 
-function triggerFileInput() {
+const triggerFileInput = () => {
   fileInput.value.click();
+  console.log(fileInput);
 }
 
-function handleFileUpload(event) {
-  const file = event.target.files[0];
-  if (file) {
-    console.log('File selected:', file);
-    const formData = new FormData();
-    formData.append('file', file);
+const triggerPPTInput = () => {
+  pptInput.value.click();
+}
 
-    fetch('/upload', {
-      method: 'POST',
-      body: formData,
-    }).then(response => {
-      if (response.ok) {
-        // Record file information here if needed
-        console.log('File uploaded successfully:', file);
-
-        // Change the content type to indicate file upload success
-        props.changeContentType(1);
-      } else {
-        console.error('File upload failed');
-      }
-    }).catch(error => {
-      console.error('Error uploading file:', error);
-    });
+const handleFileUpload = async () => {
+  const file = fileInput.value.files[0];
+  console.log(file)
+  if (file && (file.type === 'application/pdf')) {
+    contentType.value=1;
+    // uploading.value = true;
+    // pptGenerated.value = false;
+    
+    try {
+      // 模擬文件上傳過程
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 模擬2秒上傳時間
+      // pptGenerated.value = true;
+      contentType.value=2;
+    } catch (error) {
+      console.error("文件上傳失敗", error);
+    } finally {
+      uploading.value = false;
+    }
+  } else {
+    alert("請選擇一個PDF文件");
   }
-}
+};
+
+const handlePPTUpload = async () => {
+  const file = pptInput.value.files[0];
+  console.log(file)
+  const validTypes = [
+    'application/vnd.ms-powerpoint', // PPT
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation' // PPTX
+  ];
+  if (file && validTypes.includes(file.type)) {
+    // uploading.value = true;
+    // pptGenerated.value = false;
+    
+    try {
+      // 模擬文件上傳過程
+      await new Promise(resolve => setTimeout(resolve, 2000)); // 模擬2秒上傳時間
+      // pptGenerated.value = true;
+      contentType.value=3;
+    } catch (error) {
+      console.error("文件上傳失敗", error);
+    } finally {
+      uploading.value = false;
+    }
+  }
+  else {
+    alert("請選擇一個PPT文件");
+  }
+};
+
+provide("contentType", contentType);
 </script>
 
 <style scoped lang="scss">
-.upload-section,
-.Reupload-section,
-.outside-Reupload-section {
+.upload-section {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #ffffff;
+  background-color: #FFFFFF;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
@@ -105,9 +146,42 @@ function handleFileUpload(event) {
   font-size: 10px;
 }
 
+.Reupload-section {
+  display: flex;
+  align-items: center;
+  justify-content: left; 
+  /* background-color: red; */
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 10px;
+}
+
+.ouside-Reupload-section {
+  background-color: green;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 10px;
+  width: calc(100% - 500px);
+}
+
 .robot-section {
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
+.action-btn {
+  background-color: white;
+  border: 1px solid white;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin: 0 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
 </style>
