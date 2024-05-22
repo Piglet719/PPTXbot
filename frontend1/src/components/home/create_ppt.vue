@@ -85,7 +85,7 @@ const emitChangeContentType = (type) => {
 
 .actions {
   display: flex;
-  justify-content: flex-start;
+  justify-content: center;
   margin-bottom: 20px;
 
   .option-item {
@@ -95,7 +95,7 @@ const emitChangeContentType = (type) => {
     .action-btn {
       background-color: white;
       border: 1px solid white;
-      padding: 10px 20px;
+      padding: 0px 10px;
       cursor: pointer;
       margin: 0 5px;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -106,7 +106,7 @@ const emitChangeContentType = (type) => {
 
 .buttons {
   display: flex;
-  justify-content: flex-end;
+  justify-content: flex-left;
   .action-btn {
     background-color: #4285f4;
     color: white;

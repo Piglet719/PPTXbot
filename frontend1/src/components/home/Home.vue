@@ -102,7 +102,7 @@ function showFileList() {
   border: none;
   padding: 10px 20px;
   cursor: pointer;
-  margin-middle: 100px;
+  margin-top: 10px;
   display: flex;
   align-items: center;
   border-radius: 10;
