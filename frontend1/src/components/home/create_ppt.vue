@@ -2,25 +2,25 @@
   <div v-show="contentType == 3">
     <div class="Reupload-section">
       <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
-      請選擇/輸入要輸出的頁面
+      <span class="section-title">請選擇/輸入要輸出的頁面</span>
     </div>
     <div class="actions">
-      <div v-for="option in options" :key="option.value">
-      <button class="action-btn">
-        <input type="checkbox" :value="option.value" v-model="selectedOptions" />
-        {{ option.label }}
+      <div v-for="option in options" :key="option.value" class="option-item">
+          <input type="checkbox" :value="option.value" v-model="selectedOptions" />
+          {{ option.label }}
+      </div>
+    </div>
+    <div class="buttons">
+      <button class="action-btn" @click="emitChangeContentType(0)">
+        重新匯入PDF
+      </button>
+      <button class="action-btn" @click="emitChangeContentType(2)">
+        重新匯入PPT檔案
+      </button>
+      <button class="action-btn" @click="emitChangeContentType(4)">
+        產生檔案
       </button>
     </div>
-          <!-- <button class="action-btn" @click="changeContentType(4)">Introduction</button>
-          <button class="action-btn" @click="changeContentType(4)">Related Work</button>
-          <button class="action-btn" @click="changeContentType(4)">Methdology</button>
-          <button class="action-btn" @click="changeContentType(4)">Conclusion</button> -->
-        </div>
-    <!-- <button class="send-btn" @click="changeContentType(4)" >
-    </button> -->
-    <button class="pdf-input" @click="changeContentType(0)">
-      重新匯入PDF
-    </button>
   </div>
 
   <div v-show="contentType == 4">
@@ -31,16 +31,21 @@
     <div class="actions">
       <button class="download-btn">下載Power Point</button>
     </div>
-    <button class="pdf-input" @click="changeContentType(0)">
+    <button class="pdf-input" @click="emitChangeContentType(0)">
       重新匯入PDF
     </button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, inject, defineProps } from "vue";
+import { ref, defineEmits, defineProps } from "vue";
 
-const contentType = inject("contentType", ref(0));
+const props = defineProps({
+  contentType: Number
+});
+
+const emit = defineEmits(['changeContentType']);
+
 const options = [
   { value: 'option1', label: 'Introduction' },
   { value: 'option2', label: 'Related Work' },
@@ -48,10 +53,12 @@ const options = [
   { value: 'option4', label: 'Conclusion' }
 ];
 
-const props = defineProps({
-  contentType: Number
-});
+const selectedOptions = ref([]);
 
+const emitChangeContentType = (type) => {
+  console.log(`Changing content type to ${type}`);
+  emit('changeContentType', type);
+};
 </script>
 
 
@@ -59,12 +66,16 @@ const props = defineProps({
 .Reupload-section {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: flex-start;
   padding: 20px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   margin-bottom: 20px;
   font-size: 10px;
+}
+
+.section-title {
+  margin-left: 10px; /* Adjusted to add some space between image and text */
 }
 
 .robot-img {
@@ -74,16 +85,40 @@ const props = defineProps({
 
 .actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   margin-bottom: 20px;
+
+  .option-item {
+    margin: 0 5px;
+    display: flex;
+    align-items: center;
+    .action-btn {
+      background-color: white;
+      border: 1px solid white;
+      padding: 10px 20px;
+      cursor: pointer;
+      margin: 0 5px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 4px;
+    }
+  }
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
   .action-btn {
-    background-color: white;
-    border: 1px solid white;
+    background-color: #4285f4;
+    color: white;
+    border: none;
     padding: 10px 20px;
     cursor: pointer;
-    margin: 0 5px;
+    margin-left: 10px;
+    margin: 0 20px;
+    display: flex;
+    align-items: right;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    border-radius: 4px;
+    font-size: 10px;
   }
 }
 

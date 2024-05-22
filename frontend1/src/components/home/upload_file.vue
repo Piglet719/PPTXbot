@@ -1,5 +1,5 @@
 <template>
-  <div v-show="contentType == 0" class="upload-section">
+  <div v-show="contentType === 0" class="upload-section">
     <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
     請匯入論文PDF完整檔案
     <input type="file" @change="handleFileUpload" ref="fileInput" style="display: none;" />
@@ -8,19 +8,19 @@
     </button>
   </div>
 
-  <div v-show="contentType == 1" class="outside-Reupload-section">
+  <div v-show="contentType === 1" class="outside-Reupload-section">
     <div class="Reupload-section">
       <div class="robot-section">
         <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
         資料分析中......
       </div>
     </div>
-    <button class="pdf-input" @click="changeContentType(2)">
+    <button class="pdf-input" @click="emitChangeContentType(2)">
       重新匯入PDF
     </button>
   </div>
 
-  <div v-show="contentType == 2">
+  <div v-show="contentType === 2">
     <div class="Reupload-section">
       <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
       請選擇是否要匯入PPT模板
@@ -30,32 +30,30 @@
       <button class="action-btn" @click="triggerPPTInput">
         Yes(ppt/pptx)
       </button>
-      <button class="action-btn" @click="changeContentType(3)">
+      <button class="action-btn" @click="emitChangeContentType(3)">
         No
       </button>
     </div>
-    <button class="pdf-input" @click="changeContentType(0)">
+    <button class="pdf-input" @click="emitChangeContentType(0)">
       重新匯入PDF
     </button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, inject, defineProps, provide } from "vue";
-
-const contentType = ref(0);
-const fileInput = ref(null);
-const pptInput = ref(null);
-const uploading = ref(false);
-const pptFenerated = ref(false);
+import { ref, defineProps, defineEmits } from 'vue';
 
 const props = defineProps({
   contentType: Number
 });
 
+const emit = defineEmits(['changeContentType']);
+
+const fileInput = ref(null);
+const pptInput = ref(null);
+
 const triggerFileInput = () => {
   fileInput.value.click();
-  console.log(fileInput);
 }
 
 const triggerPPTInput = () => {
@@ -66,7 +64,7 @@ const handleFileUpload = async () => {
   const file = fileInput.value.files[0];
   console.log(file)
   if (file && (file.type === 'application/pdf')) {
-    contentType.value=1;
+    emitChangeContentType(1);
     // uploading.value = true;
     // pptGenerated.value = false;
     
@@ -74,7 +72,7 @@ const handleFileUpload = async () => {
       // 模擬文件上傳過程
       await new Promise(resolve => setTimeout(resolve, 2000)); // 模擬2秒上傳時間
       // pptGenerated.value = true;
-      contentType.value=2;
+      emitChangeContentType(2);
     } catch (error) {
       console.error("文件上傳失敗", error);
     } finally {
@@ -100,7 +98,7 @@ const handlePPTUpload = async () => {
       // 模擬文件上傳過程
       await new Promise(resolve => setTimeout(resolve, 2000)); // 模擬2秒上傳時間
       // pptGenerated.value = true;
-      contentType.value=3;
+      emitChangeContentType(3);
     } catch (error) {
       console.error("文件上傳失敗", error);
     } finally {
@@ -112,7 +110,10 @@ const handlePPTUpload = async () => {
   }
 };
 
-provide("contentType", contentType);
+const emitChangeContentType = (type) => {
+  console.log(`Changing content type to ${type}`);
+  emit('changeContentType', type);
+};
 </script>
 
 <style scoped lang="scss">

@@ -10,8 +10,8 @@
     <div class="content-region">
       <Chat :messenges="messenges" @sendMessenges="handleSendMessenge" />
       <div v-show="selectedTabIndex == 0">
-        <UploadFile :changeContentType="changeContentType" />
-        <CreatePPT :changeContentType="changeContentType" :contentType="contentType" />
+        <UploadFile :contentType="contentType" @changeContentType="changeContentType" />
+        <CreatePPT :contentType="contentType" @changeContentType="changeContentType" />
       </div>
     </div>
   </div>
