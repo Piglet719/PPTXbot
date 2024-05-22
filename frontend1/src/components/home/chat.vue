@@ -9,16 +9,14 @@
   </footer>
 
   <div class="messenge-section">
-    <div class="onemessenge" v-for="(message, index) in localMessenges" :key="index">
-      {{ message }}
+    <div class="onemessenge" v-for="(msg, index) in messenges" :key="index">
+      {{ msg }}
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, inject, defineProps, computed } from "vue";
-
-const sendMessenge = ref("");
+import { ref, defineProps, defineEmits } from "vue";
 
 const props = defineProps({
   messenges: {
@@ -30,17 +28,13 @@ const props = defineProps({
 const emit = defineEmits(["sendMessenges"]);
 const message = ref("");
 
-const localMessenges = computed(() => props.messenges.slice()); // 使用 computed 创建一个本地副本
-
 function sendMessenges() {
   if (message.value.trim()) {
-    const sendMessage = message.value;
+    const newMessage = message.value.trim();
     message.value = "";
-    localMessenges.value.push(sendMessage); // 使用本地数据进行操作
-    emit("sendMessenges", sendMessage);
+    emit("sendMessenges", newMessage);
   }
 }
-
 </script>
 
 

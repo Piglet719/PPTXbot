@@ -4,6 +4,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 
 import router from './router'
+import axiosInstance from './axios';
 
 const app = createApp(App)
 // const top = createApp(main)
@@ -11,6 +12,7 @@ const app = createApp(App)
 // const text2 = createApp(maintext1)
 // const text3 = createApp(maintext2)
 
+app.config.globalProperties.$axios = axiosInstance;
 app.use(createPinia())
 app.use(router)
 // top.use(router)

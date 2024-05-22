@@ -6,8 +6,8 @@
     </div>
     <div class="actions">
       <div v-for="option in options" :key="option.value" class="option-item">
-          <input type="checkbox" :value="option.value" v-model="selectedOptions" />
-          {{ option.label }}
+        <input type="checkbox" :value="option.value" v-model="selectedOptions" />
+        {{ option.label }}
       </div>
     </div>
     <div class="buttons">
@@ -17,7 +17,7 @@
       <button class="action-btn" @click="emitChangeContentType(2)">
         重新匯入PPT檔案
       </button>
-      <button class="action-btn" @click="emitChangeContentType(4)">
+      <button class="action-btn" @click="generateFile">
         產生檔案
       </button>
     </div>
@@ -29,7 +29,7 @@
       已轉檔完成！
     </div>
     <div class="actions">
-      <button class="download-btn">下載Power Point</button>
+      <button class="download-btn" @click="downloadPPT">下載Power Point</button>
     </div>
     <button class="pdf-input" @click="emitChangeContentType(0)">
       重新匯入PDF
@@ -39,6 +39,7 @@
 
 <script setup>
 import { ref, defineEmits, defineProps } from "vue";
+import axios from 'axios';
 
 const props = defineProps({
   contentType: Number
@@ -58,6 +59,34 @@ const selectedOptions = ref([]);
 const emitChangeContentType = (type) => {
   console.log(`Changing content type to ${type}`);
   emit('changeContentType', type);
+};
+
+const generateFile = async () => {
+  try {
+    const response = await axios.post('http://127.0.0.1:5000/api/create_ppt', {
+      selectedOptions: selectedOptions.value
+    });
+    console.log('File generated:', response.data);
+    emitChangeContentType(4);
+  } catch (error) {
+    console.error('Error generating file:', error);
+  }
+};
+
+const downloadPPT = async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:5000/api/download', {
+      responseType: 'blob'
+    });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'presentation.pptx');
+    document.body.appendChild(link);
+    link.click();
+  } catch (error) {
+    console.error('Error downloading file:', error);
+  }
 };
 </script>
 

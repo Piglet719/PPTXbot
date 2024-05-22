@@ -42,6 +42,7 @@
 
 <script setup>
 import { ref, defineProps, defineEmits } from 'vue';
+import axios from 'axios';
 
 const props = defineProps({
   contentType: Number
@@ -54,59 +55,53 @@ const pptInput = ref(null);
 
 const triggerFileInput = () => {
   fileInput.value.click();
-}
+};
 
 const triggerPPTInput = () => {
   pptInput.value.click();
-}
+};
 
 const handleFileUpload = async () => {
   const file = fileInput.value.files[0];
-  console.log(file)
-  if (file && (file.type === 'application/pdf')) {
+  console.log(file);
+  if (file && file.type === 'application/pdf') {
     emitChangeContentType(1);
-    // uploading.value = true;
-    // pptGenerated.value = false;
     
     try {
-      // 模擬文件上傳過程
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 模擬2秒上傳時間
-      // pptGenerated.value = true;
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await axios.post('http://127.0.0.1:5000/api/upload_file', formData);
+      console.log(response.data);
       emitChangeContentType(2);
     } catch (error) {
-      console.error("文件上傳失敗", error);
-    } finally {
-      uploading.value = false;
+      console.error('文件上傳失敗', error);
+      alert('文件上傳失敗');
     }
   } else {
-    alert("請選擇一個PDF文件");
+    alert('請選擇一個PDF文件');
   }
 };
 
 const handlePPTUpload = async () => {
   const file = pptInput.value.files[0];
-  console.log(file)
+  console.log(file);
   const validTypes = [
     'application/vnd.ms-powerpoint', // PPT
     'application/vnd.openxmlformats-officedocument.presentationml.presentation' // PPTX
   ];
   if (file && validTypes.includes(file.type)) {
-    // uploading.value = true;
-    // pptGenerated.value = false;
-    
     try {
-      // 模擬文件上傳過程
-      await new Promise(resolve => setTimeout(resolve, 2000)); // 模擬2秒上傳時間
-      // pptGenerated.value = true;
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await axios.post('http://127.0.0.1:5000/api/upload_file', formData);
+      console.log(response.data);
       emitChangeContentType(3);
     } catch (error) {
-      console.error("文件上傳失敗", error);
-    } finally {
-      uploading.value = false;
+      console.error('文件上傳失敗', error);
+      alert('文件上傳失敗');
     }
-  }
-  else {
-    alert("請選擇一個PPT文件");
+  } else {
+    alert('請選擇一個PPT文件');
   }
 };
 
