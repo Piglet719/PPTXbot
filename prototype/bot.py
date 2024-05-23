@@ -6,18 +6,18 @@ from langchain_community.vectorstores import FAISS
 from langchain.chains.question_answering import load_qa_chain
 from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
-from md2pptx import convert_markdown_to_pptx
+from md2pptx import convert_markdown_to_pptx  # Importing the function
 import boto3
 from langchain_community.embeddings import BedrockEmbeddings
 from langchain.indexes import VectorstoreIndexCreator
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_aws import BedrockLLM
+import tempfile
 
 load_dotenv()
 
 region = boto3.Session().region_name
 session = boto3.Session(region_name=region)
-
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -27,34 +27,30 @@ def get_pdf_text(pdf_docs):
             text += page.extract_text()
     return text
 
-# split text into chunks
-
-
 def get_text_chunks(text):
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=10000, chunk_overlap=1000)
     chunks = splitter.split_text(text)
     return chunks  # list of strings
 
-# get embeddings for each chunk
-
-
 def get_vector_store(chunks):
     embeddings = BedrockEmbeddings()
     vector_store = FAISS.from_texts(chunks, embedding=embeddings)
     vector_store.save_local("faiss_index")
 
-
 def get_conversational_chain():
     prompt_template = """
-    Please use Markdown syntax to output detailed presentation content from the provided context. Make sure to provide all the details. \n\n
+    Please use Markdown syntax to output detailed presentation content from the provided context. Make sure to provide all the details and include speaker notes using the format ::: notes ... ::: at the end of each section or slide. The speaker notes should be written in a way that the presenter can read them directly during the presentation.\n\n
     Context:\n {context}\n
 
     Presentation content example:
-    # Tilte
+    # Title
     ## Introduction
     - **Keyword**: Description.
     - **Keyword2**: Description2.
+    ::: notes
+    Provide additional information or explanation for the presenter here. Write it as a script that the presenter can read directly.
+    :::
     """
 
     model = BedrockLLM(
@@ -63,29 +59,38 @@ def get_conversational_chain():
     prompt = PromptTemplate(template=prompt_template,
                             input_variables=["context"])
     chain = load_qa_chain(llm=model, chain_type="stuff", prompt=prompt)
-    print(chain)
     return chain
-
 
 def clear_chat_history():
     st.session_state.messages = [
         {"role": "assistant", "content": "upload some pdfs"}]
 
-
 def user_input(user_question):
     embeddings = BedrockEmbeddings()
-
     new_db = FAISS.load_local("faiss_index", embeddings, allow_dangerous_deserialization=True)
     docs = new_db.similarity_search(user_question)
-
     chain = get_conversational_chain()
-
     response = chain(
         {"input_documents": docs}, return_only_outputs=True, )
-
-    print(response)
     return response
 
+def clean_markdown_content(markdown_text):
+    """ Clean the markdown content by removing any text before the first h1 header """
+    lines = markdown_text.split('\n')
+    clean_lines = []
+    found_h1 = False
+    for line in lines:
+        #print(f"Processing line: {line}")  # Debugging line to print each line being processed
+        if line.startswith("# "):
+            found_h1 = True
+        if found_h1:
+            clean_lines.append(line)
+    # Print the lines for debugging
+    '''print("Lines after split:")
+    print(lines)
+    print("Cleaned lines:")
+    print(clean_lines)'''
+    return '\n'.join(clean_lines)
 
 def main():
     st.set_page_config(
@@ -98,7 +103,7 @@ def main():
         st.title("Menu:")
         pdf_docs = st.file_uploader(
             "Upload your PDF Files and Click on the Submit & Process Button", accept_multiple_files=True)
-        template = st.file_uploader("Upload your powerpoint template")
+        template = st.file_uploader("Upload your PowerPoint template")
         if st.button("Submit & Process"):
             with st.spinner("Processing..."):
                 raw_text = get_pdf_text(pdf_docs)
@@ -112,8 +117,6 @@ def main():
     st.sidebar.button('Clear Chat History', on_click=clear_chat_history)
 
     # Chat input
-    # Placeholder for chat messages
-
     if "messages" not in st.session_state.keys():
         st.session_state.messages = [
             {"role": "assistant", "content": "upload some pdfs"}]
@@ -138,7 +141,30 @@ def main():
                     full_response += item
                     placeholder.text(full_response)
                 placeholder.text(full_response)
-                pptx_file = convert_markdown_to_pptx(full_response, template)
+                
+                # Print the response for debugging
+                '''print("Generated Response:")
+                print(full_response)'''
+                
+                # Clean the markdown content
+                clean_response = clean_markdown_content(full_response)
+
+                # Print the cleaned markdown content for debugging
+                '''print("Cleaned Markdown Content:")
+                print(clean_response)'''
+
+                # Handle template file
+                if template is not None:
+                    with tempfile.NamedTemporaryFile(delete=False, suffix='.pptx') as temp_template_file:
+                        temp_template_file.write(template.read())
+                        template_path = temp_template_file.name
+                else:
+                    template_path = None
+
+                # Generate the PPTX file
+                pptx_file = convert_markdown_to_pptx(clean_response, 'output.pptx', template_path)
+                
+
                 with open(pptx_file, "rb") as file:
                     st.download_button(
                         label="Download PPTX",
@@ -149,7 +175,6 @@ def main():
         if response is not None:
             message = {"role": "assistant", "content": full_response}
             st.session_state.messages.append(message)
-
 
 if __name__ == "__main__":
     main()
