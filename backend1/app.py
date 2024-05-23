@@ -15,6 +15,7 @@ CORS(app)
 app.secret_key = 'supersecretkey'
 UPLOAD_FOLDER = 'uploaded_files'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+os.makedirs('static', exist_ok=True)
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
@@ -36,17 +37,15 @@ def create_ppt():
     templates = os.listdir(UPLOAD_FOLDER)
     print(f'template in uploaded_files directory: {templates}')
     template = [file for file in templates if file.endswith('.pptx')]
-    if template:
-        # template_path = save_uploadedfile(template)
-        response = output_md()
-        full_response = ''.join(response['output_text'])
-        cleaned_text = textwrap.dedent(full_response).strip()
-        pptx_file = convert_markdown_to_pptx(cleaned_text, 'output.pptx', 'C:\\Users\\USER\\Downloads\\test\\test.pptx')
-        if pptx_file:
-            return send_file(pptx_file, as_attachment=True, download_name='GeneratedPresentation.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')
-        else:
-            return jsonify(success=False, message='Failed to create PowerPoint presentation')
-    return jsonify(success=False, message='No template file provided')
+    current_path = os.getcwd()
+    response = output_md()
+    full_response = ''.join(response['output_text'])
+    cleaned_text = textwrap.dedent(full_response).strip()
+    pptx_file = convert_markdown_to_pptx(cleaned_text, 'output.pptx', current_path + '\\{UPLOAD_FOLDER}\\' + template[0])
+    if pptx_file:
+        return send_file(pptx_file, as_attachment=True, download_name='GeneratedPresentation.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+    else:
+        return jsonify(success=False, message='Failed to create PowerPoint presentation')
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
