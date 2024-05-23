@@ -65,17 +65,7 @@ const generateFile = async () => {
   try {
     const response = await axios.post('http://127.0.0.1:5000/api/create_ppt', {
       selectedOptions: selectedOptions.value
-    });
-    console.log('File generated:', response.data);
-    emitChangeContentType(4);
-  } catch (error) {
-    console.error('Error generating file:', error);
-  }
-};
-
-const downloadPPT = async () => {
-  try {
-    const response = await axios.get('http://127.0.0.1:5000/api/download', {
+    }, {
       responseType: 'blob'
     });
     const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -84,8 +74,9 @@ const downloadPPT = async () => {
     link.setAttribute('download', 'presentation.pptx');
     document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   } catch (error) {
-    console.error('Error downloading file:', error);
+    console.error('Error generating file:', error);
   }
 };
 </script>

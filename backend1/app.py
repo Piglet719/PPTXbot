@@ -4,9 +4,8 @@ from werkzeug.utils import secure_filename
 import google.generativeai as genai
 from dotenv import load_dotenv
 from md2pptx import convert_markdown_to_pptx
-from utils import user_input, output_md, save_uploadedfile, display_pdf
+from utils import user_input, output_md, save_uploadedfile
 from flask_cors import CORS
-from io import BytesIO
 
 load_dotenv()
 
@@ -31,26 +30,14 @@ def upload_file():
 
 @app.route('/api/create_ppt', methods=['POST'])
 def create_ppt():
-    context = request.form.get('context')
-    template = request.files.get('template')
-    if context and template:
-        template_path = save_uploadedfile(template)
-        response = output_md()  # Assuming output_md takes context as input
-        pptx_file = convert_markdown_to_pptx(response, template_path)
-        output_path = os.path.join('generated_files', 'presentation.pptx')
-        print(output_path)
-        with open(output_path, "wb") as f:
-            f.write(pptx_file.read())
-        session['pptx_file_path'] = output_path  # Store the pptx file path in session
-        return jsonify(success=True, message='PPT created successfully')
-    return jsonify(success=False, message='Context or template missing')
-
-@app.route('/api/download', methods=['GET'])
-def download():
-    pptx_file_path = session.get('pptx_file_path')
-    if pptx_file_path and os.path.exists(pptx_file_path):
-        return send_file(pptx_file_path, as_attachment=True, download_name='presentation.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')
-    return jsonify(success=False, message='No file to download')
+    context = request.form.get('context', '')
+    # template = request.files.get('template', '')
+    # template_path = save_uploadedfile(template)
+    response = output_md()  # In a real scenario, this would generate based on context
+    template_path = None
+    pptx_file = convert_markdown_to_pptx(response, template_path)
+    return send_file(pptx_file, as_attachment=True, download_name='test.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+    # return jsonify(success=False, message='No file to download')
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
