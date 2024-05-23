@@ -2,7 +2,7 @@
   <div v-show="contentType == 3">
     <div class="Reupload-section">
       <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
-      <span class="section-title">請選擇/輸入要輸出的頁面</span>
+      <span class="section-title">請選擇要執行的動作</span>
     </div>
     <div class="buttons">
       <button class="action-btn" @click="emitChangeContentType(0)">
