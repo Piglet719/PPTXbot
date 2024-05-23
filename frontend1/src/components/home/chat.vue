@@ -1,42 +1,62 @@
 <template>
   <footer id="bottom-tab-region">
     <div class="input-section">
-      <input v-model="message" type="text" placeholder="Input here..." @keyup.enter="sendMessenges" />
-      <button class="send-btn" @click="sendMessenges">
+      <input v-model="question" type="text" placeholder="Input here..." @keyup.enter="sendQuestion" />
+      <button class="send-btn" @click="sendQuestion">
         <img src="@/components/home/content/assets/send_msg.png" />
       </button>
     </div>
   </footer>
 
-  <div class="messenge-section">
-    <div class="onemessenge" v-for="(msg, index) in messenges" :key="index">
-      {{ msg }}
+  <div class="messenge-section" ref="messageSection">
+    <div v-for="(message, index) in messages" :key="index" class="message-group">
+      <div class="user-conversation" v-if="index % 2 === 0">
+        <div class="message user-message">{{ message }}</div>
+      </div>
+      <div class="assistant-conversation" v-else>
+        <div class="message assistant-message">{{ message }}</div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, defineProps, defineEmits } from "vue";
+import { ref, onMounted, nextTick } from "vue";
+import axios from 'axios';
 
-const props = defineProps({
-  messenges: {
-    type: Array,
-    required: true
+const question = ref(""); 
+const messages = ref([]); 
+
+const sendQuestion = async () => {
+  if (question.value.trim()) {
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/api/chat', { prompt: question.value });
+      console.log('Response from backend:', response.data); 
+      if (response.data.success && response.data.messages) {
+        messages.value = response.data.messages.map(msg => msg.content);
+      }
+    } catch (error) {
+      console.error('Error sending question:', error);
+    }
+    question.value = ""; 
   }
-});
+  nextTick(() => {
+    scrollToBottom();
+  });
+}
 
-const emit = defineEmits(["sendMessenges"]);
-const message = ref("");
-
-function sendMessenges() {
-  if (message.value.trim()) {
-    const newMessage = message.value.trim();
-    message.value = "";
-    emit("sendMessenges", newMessage);
+const scrollToBottom = () => {
+  const messageSection = document.querySelector('.messenge-section');
+  if (messageSection) {
+    messageSection.scrollTop = messageSection.scrollHeight;
   }
 }
-</script>
 
+onMounted(() => {
+  scrollToBottom();
+});
+
+</script>
 
 <style scoped lang="scss">
 
@@ -45,35 +65,46 @@ function sendMessenges() {
   transform: translate(40px,0);
   overflow-x: hidden;
   overflow-y: scroll;
+  .message {
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    max-width: 40%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .user-conversation {
+    align-self: flex-end; 
+    .user-message {
+      margin-left: auto; 
+      background-color: #ffffff; 
+    }
+  }
+
+  .assistant-conversation {
+    align-self: flex-start; 
+    .assistant-message {
+      background-color: #A5C2BB; 
+      margin-right: auto; 
+    }
+  }
 }
 
-.onemessenge {
-  display: flex;
-  align-items: center;
-  justify-content: left;
-  background-color: #ffffff;
-  padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
-  margin-bottom: 20px;
-  font-size: 15px;
-  width: calc(100% - 5px);
-}
 
 #bottom-tab-region {
   width: 100%;
   
   .input-section {
-    position: fixed; /* 固定位置 */
-    bottom: 20px; /* 距離底部 20px */
-    left: 50%; /* 從左側 50% */
-    transform: translateX(-50%); /* 向左移動 50% 以居中 */
+    position: fixed; // 固定位置
+    bottom: 20px; // 距離底部 20px
+    left: 50%; // 從左側 50%
+    transform: translateX(-50%); // 向左移動 50% 以居中
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 100%; /* 撑满整个宽度 */
-    padding: 10px; /* 增加 padding 以便更好看 */
-
+    width: 100%; // 撑满整个宽度
+    padding: 10px; // 增加 padding 以便更好看
     
     input {
       font-family: "Noto Sans TC-Bold", Helvetica;
@@ -96,4 +127,5 @@ function sendMessenges() {
     }
   }
 }
+
 </style>

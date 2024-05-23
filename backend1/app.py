@@ -14,6 +14,7 @@ app = Flask(__name__)
 CORS(app)
 app.secret_key = 'supersecretkey'
 UPLOAD_FOLDER = 'uploaded_files'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
@@ -52,7 +53,10 @@ def chat():
     prompt = request.json.get('prompt')
     if prompt:
         response = user_input(prompt)
-        session['messages'] = session.get('messages', []) + [{'role': 'user', 'content': prompt}, {'role': 'assistant', 'content': response}]
+        if 'messages' not in session:
+            session['messages'] = []
+        session['messages'].append({'role': 'user', 'content': prompt})
+        session['messages'].append({'role': 'assistant', 'content': response})
         return jsonify(success=True, messages=session['messages'])
     return jsonify(success=False, message='Prompt missing')
 

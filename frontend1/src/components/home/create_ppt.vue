@@ -14,18 +14,35 @@
       <button class="action-btn" @click="generateFile">
         產生檔案
       </button>
+      <button class="action-btn" @click="viewRecentPDF">
+        開啟pdf
+      </button>
     </div>
   </div>
 
   <div v-show="contentType == 4">
     <div class="Reupload-section">
       <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
-      已轉檔完成！
+      下載中...
     </div>
-    <div class="actions">
-      <button class="download-btn" @click="downloadPPT">下載Power Point</button>
+  </div>
+
+  <div v-show="contentType == 5">
+    <div class="Reupload-section">
+      <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
+      下載完成！
     </div>
-    <button class="pdf-input" @click="emitChangeContentType(0)">
+    <button class="pdf-input" @click="emitChangeContentType(2)">
+      重新匯入PDF
+    </button>
+  </div>
+
+  <div v-show="contentType == 6">
+    <div class="Reupload-section">
+      <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
+      下載失敗！
+    </div>
+    <button class="pdf-input" @click="emitChangeContentType(2)">
       重新匯入PDF
     </button>
   </div>
@@ -50,6 +67,7 @@ const emitChangeContentType = (type) => {
 
 const generateFile = async () => {
   try {
+    emitChangeContentType(4);
     const response = await axios.post('http://127.0.0.1:5000/api/create_ppt', {
       selectedOptions: selectedOptions.value
     }, {
@@ -62,10 +80,27 @@ const generateFile = async () => {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    emitChangeContentType(5);
   } catch (error) {
     console.error('Error generating file:', error);
+    emitChangeContentType(6);
   }
 };
+
+const viewRecentPDF = async () => {
+  try {
+    const response = await axios.get('http://127.0.0.1:5000/api/recent_file');
+    if (response.data.filename) {
+      const fileUrl = `http://127.0.0.1:5000/api/display_file?file=${response.data.filename}`;
+      window.open(fileUrl, '_blank');
+    } else {
+      alert('沒有找到最近的PDF文件');
+    }
+  } catch (error) {
+    console.error('Error fetching recent file:', error);
+  }
+};
+
 </script>
 
 
@@ -78,7 +113,7 @@ const generateFile = async () => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   margin-bottom: 20px;
-  font-size: 10px;
+  font-size: 15px;
 }
 
 .section-title {
@@ -125,7 +160,7 @@ const generateFile = async () => {
     display: flex;
     align-items: right;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    font-size: 10px;
+    font-size: 15px;
   }
 }
 
@@ -149,6 +184,20 @@ const generateFile = async () => {
   display: flex;
   align-items: center;
   border-radius: 10;
-  font-size: 10px;
+  font-size: 15px;
+}
+
+
+.pdf-input {
+  background-color: #4285f4;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin-left: 500px;
+  display: flex;
+  align-items: center;
+  border-radius: 10;
+  font-size: 15px;
 }
 </style>
