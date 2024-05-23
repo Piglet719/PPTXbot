@@ -80,7 +80,7 @@ def output_md():
     response = chain(
         {"input_documents": docs}, return_only_outputs=True, )
 
-    return response['output_text']
+    return response
 
 def save_uploadedfile(uploadedfile):
     filename = secure_filename(uploadedfile.filename)
@@ -90,7 +90,7 @@ def save_uploadedfile(uploadedfile):
 
 def get_md_chain():
     prompt_template = """
-    Please use Markdown syntax to output detailed presentation content from the provided context. Make sure to provide all the details. \n\n
+    Please use Markdown syntax to output detailed presentation content from the provided context. Make sure to provide all the details and include speaker notes using the format ::: notes ... ::: at the end of each section or slide. The speaker notes should be written in a way that the presenter can read them directly during the presentation.\n\n
     Context:\n {context}\n
 
     Presentation content example:
@@ -98,6 +98,10 @@ def get_md_chain():
     ## Introduction
     - **Keyword**: Description.
     - **Keyword2**: Description2.
+    \n
+    ::: notes
+    Provide additional information or explanation for the presenter here. Write it as a script that the presenter can read directly.
+    :::
     """
 
     model = ChatGoogleGenerativeAI(model="gemini-pro",

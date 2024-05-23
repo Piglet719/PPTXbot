@@ -4,12 +4,6 @@
       <img class="robot-img" src="@/components/home/content/assets/robot_icon.png" />
       <span class="section-title">請選擇/輸入要輸出的頁面</span>
     </div>
-    <div class="actions">
-      <div v-for="option in options" :key="option.value" class="option-item">
-        <input type="checkbox" :value="option.value" v-model="selectedOptions" />
-        {{ option.label }}
-      </div>
-    </div>
     <div class="buttons">
       <button class="action-btn" @click="emitChangeContentType(0)">
         重新匯入PDF
@@ -46,13 +40,6 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['changeContentType']);
-
-const options = [
-  { value: 'option1', label: 'Introduction' },
-  { value: 'option2', label: 'Related Work' },
-  { value: 'option3', label: 'Methdology' },
-  { value: 'option4', label: 'Conclusion' }
-];
 
 const selectedOptions = ref([]);
 

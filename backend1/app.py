@@ -6,12 +6,14 @@ from dotenv import load_dotenv
 from md2pptx import convert_markdown_to_pptx
 from utils import user_input, output_md, save_uploadedfile
 from flask_cors import CORS
+import textwrap
 
 load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
 app.secret_key = 'supersecretkey'
+UPLOAD_FOLDER = 'uploaded_files'
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
@@ -30,14 +32,20 @@ def upload_file():
 
 @app.route('/api/create_ppt', methods=['POST'])
 def create_ppt():
-    context = request.form.get('context', '')
-    # template = request.files.get('template', '')
-    # template_path = save_uploadedfile(template)
-    response = output_md()  # In a real scenario, this would generate based on context
-    template_path = None
-    pptx_file = convert_markdown_to_pptx(response, template_path)
-    return send_file(pptx_file, as_attachment=True, download_name='test.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')
-    # return jsonify(success=False, message='No file to download')
+    templates = os.listdir(UPLOAD_FOLDER)
+    print(f'template in uploaded_files directory: {templates}')
+    template = [file for file in templates if file.endswith('.pptx')]
+    if template:
+        # template_path = save_uploadedfile(template)
+        response = output_md()
+        full_response = ''.join(response['output_text'])
+        cleaned_text = textwrap.dedent(full_response).strip()
+        pptx_file = convert_markdown_to_pptx(cleaned_text, 'output.pptx', 'C:\\Users\\USER\\Downloads\\test\\test.pptx')
+        if pptx_file:
+            return send_file(pptx_file, as_attachment=True, download_name='GeneratedPresentation.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')
+        else:
+            return jsonify(success=False, message='Failed to create PowerPoint presentation')
+    return jsonify(success=False, message='No template file provided')
 
 @app.route('/api/chat', methods=['POST'])
 def chat():
@@ -48,17 +56,24 @@ def chat():
         return jsonify(success=True, messages=session['messages'])
     return jsonify(success=False, message='Prompt missing')
 
-@app.route('/api/view_files', methods=['GET'])
-def view_files():
-    pdf_files = os.listdir('uploaded_files')
-    return jsonify(pdf_files=pdf_files)
+@app.route('/api/recent_file', methods=['GET'])
+def recent_file():
+    files = os.listdir(UPLOAD_FOLDER)
+    print(f'Files in uploaded_files directory: {files}')
+    pdf_files = [file for file in files if file.endswith('.pdf')]
+    if pdf_files:
+        recent_file = max(pdf_files, key=lambda x: os.path.getctime(os.path.join(UPLOAD_FOLDER, x)))
+        return jsonify(filename=recent_file)
+    return jsonify(success=False, message='No recent file found'), 404
 
-@app.route('/api/display_image/<int:image_num>', methods=['GET'])
-def display_image(image_num):
-    images = session.get('images')
-    if images and 0 <= image_num < len(images):
-        return send_file(images[image_num], mimetype='image/png')
-    return '', 404
+@app.route('/api/display_file', methods=['GET'])
+def display_file():
+    file_name = request.args.get('file')
+    if file_name:
+        file_path = os.path.join(UPLOAD_FOLDER, file_name)
+        if os.path.exists(file_path):
+            return send_file(file_path, as_attachment=False, mimetype='application/pdf')
+    return jsonify(success=False, message='File not found'), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
