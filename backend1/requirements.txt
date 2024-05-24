@@ -1,0 +1,9 @@
+Flask
+PyMuPDF
+PyPDF2
+langchain
+langchain_google_genai
+google.generativeai
+FAISS
+md2pptx
+python-dotenv
