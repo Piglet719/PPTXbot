@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 import google.generativeai as genai
 from dotenv import load_dotenv
 from md2pptx import convert_markdown_to_pptx
-from utils import user_input, output_md, save_uploadedfile
+from utils import user_input, output_md, read_pdf, get_recent_pdf_content
 from flask_cors import CORS
 import textwrap
 
@@ -38,10 +38,18 @@ def create_ppt():
     print(f'template in uploaded_files directory: {templates}')
     template = [file for file in templates if file.endswith('.pptx')]
     current_path = os.getcwd()
+    pdf_path = get_recent_pdf_content()
+    if not pdf_path:
+        return jsonify(success=False, message='No recent PDF file found')
+
+    read_pdf(pdf_path)
     response = output_md()
     full_response = ''.join(response['output_text'])
     cleaned_text = textwrap.dedent(full_response).strip()
-    pptx_file = convert_markdown_to_pptx(cleaned_text, 'output.pptx', current_path + '\\{UPLOAD_FOLDER}\\' + template[0])
+    if template:
+        pptx_file = convert_markdown_to_pptx(cleaned_text, 'output.pptx', current_path + '\\uploaded_files\\' + template[0])
+    else:
+        pptx_file = convert_markdown_to_pptx(cleaned_text, 'output.pptx', None)
     if pptx_file:
         return send_file(pptx_file, as_attachment=True, download_name='GeneratedPresentation.pptx', mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation')
     else:
