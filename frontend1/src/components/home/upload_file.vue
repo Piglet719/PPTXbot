@@ -121,7 +121,7 @@ const emitChangeContentType = (type) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   margin-bottom: 20px;
-  font-size: 10px;
+  font-size: 15px;
 }
 
 .robot-img {
@@ -139,7 +139,7 @@ const emitChangeContentType = (type) => {
   display: flex;
   align-items: center;
   border-radius: 10;
-  font-size: 10px;
+  font-size: 15px;
 }
 
 .Reupload-section {
@@ -151,7 +151,7 @@ const emitChangeContentType = (type) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   margin-bottom: 20px;
-  font-size: 10px;
+  font-size: 15px;
 }
 
 .ouside-Reupload-section {
@@ -160,7 +160,7 @@ const emitChangeContentType = (type) => {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   margin-bottom: 20px;
-  font-size: 10px;
+  font-size: 15px;
   width: calc(100% - 500px);
 }
 

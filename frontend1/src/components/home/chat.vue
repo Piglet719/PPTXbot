@@ -8,13 +8,13 @@
     </div>
   </footer>
 
-  <div class="messenge-section" ref="messageSection">
+  <div class="message-section" ref="messageSection">
     <div v-for="(message, index) in messages" :key="index" class="message-group">
-      <div class="user-conversation" v-if="index % 2 === 0">
-        <div class="message user-message">{{ message }}</div>
+      <div class="user-conversation" v-if="message.role === 'user'">
+        <div class="message user-message">{{ message.content }}</div>
       </div>
       <div class="assistant-conversation" v-else>
-        <div class="message assistant-message">{{ message }}</div>
+        <div class="message assistant-message">{{ message.content }}</div>
       </div>
     </div>
   </div>
@@ -29,11 +29,19 @@ const messages = ref([]);
 
 const sendQuestion = async () => {
   if (question.value.trim()) {
+    // 添加用户消息到messages
+    messages.value.push({ role: 'user', content: question.value });
+    
     try {
       const response = await axios.post('http://127.0.0.1:5000/api/chat', { prompt: question.value });
       console.log('Response from backend:', response.data); 
       if (response.data.success && response.data.messages) {
-        messages.value = response.data.messages.map(msg => msg.content);
+        // 将助手的消息添加到messages
+        response.data.messages.forEach(msg => {
+          if (msg.role === 'assistant') {
+            messages.value.push({ role: 'assistant', content: msg.content });
+          }
+        });
       }
     } catch (error) {
       console.error('Error sending question:', error);
@@ -46,7 +54,7 @@ const sendQuestion = async () => {
 }
 
 const scrollToBottom = () => {
-  const messageSection = document.querySelector('.messenge-section');
+  const messageSection = document.querySelector('.message-section');
   if (messageSection) {
     messageSection.scrollTop = messageSection.scrollHeight;
   }
@@ -60,7 +68,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 
-.messenge-section {
+.message-section {
   width: calc(100%/2);
   transform: translate(40px,0);
   overflow-x: hidden;
