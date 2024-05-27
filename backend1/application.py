@@ -10,20 +10,20 @@ import textwrap
 
 load_dotenv()
 
-app = Flask(__name__)
-CORS(app)
-app.secret_key = 'supersecretkey'
+application = Flask(__name__, static_folder='dist')
+CORS(application, resources={r"/api/*": {"origins": "*"}})
+application.secret_key = 'supersecretkey'
 UPLOAD_FOLDER = 'uploaded_files'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs('static', exist_ok=True)
 
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-@app.route('/')
+@application.route('/')
 def index():
     return jsonify(message="Welcome to the API")
 
-@app.route('/api/upload_file', methods=['POST'])
+@application.route('/api/upload_file', methods=['POST'])
 def upload_file():
     file = request.files.get('file')
     if file:
@@ -32,7 +32,7 @@ def upload_file():
         return jsonify(success=True, message='File uploaded successfully')
     return jsonify(success=False, message='No file uploaded')
 
-@app.route('/api/create_ppt', methods=['POST'])
+@application.route('/api/create_ppt', methods=['POST'])
 def create_ppt():
     templates = os.listdir(UPLOAD_FOLDER)
     print(f'template in uploaded_files directory: {templates}')
@@ -47,7 +47,7 @@ def create_ppt():
     full_response = ''.join(response['output_text'])
     cleaned_text = textwrap.dedent(full_response).strip()
     if template:
-        pptx_file = convert_markdown_to_pptx(cleaned_text, 'output.pptx', current_path + '\\uploaded_files\\' + template[0])
+        pptx_file = convert_markdown_to_pptx(cleaned_text, 'output.pptx', os.path.join(current_path, 'uploaded_files', template[0]))
     else:
         pptx_file = convert_markdown_to_pptx(cleaned_text, 'output.pptx', None)
     if pptx_file:
@@ -55,7 +55,7 @@ def create_ppt():
     else:
         return jsonify(success=False, message='Failed to create PowerPoint presentation')
 
-@app.route('/api/chat', methods=['POST'])
+@application.route('/api/chat', methods=['POST'])
 def chat():
     prompt = request.json.get('prompt')
     if prompt:
@@ -67,7 +67,7 @@ def chat():
         return jsonify(success=True, messages=session['messages'])
     return jsonify(success=False, message='Prompt missing')
 
-@app.route('/api/recent_file', methods=['GET'])
+@application.route('/api/recent_file', methods=['GET'])
 def recent_file():
     files = os.listdir(UPLOAD_FOLDER)
     print(f'Files in uploaded_files directory: {files}')
@@ -77,7 +77,7 @@ def recent_file():
         return jsonify(filename=recent_file)
     return jsonify(success=False, message='No recent file found'), 404
 
-@app.route('/api/display_file', methods=['GET'])
+@application.route('/api/display_file', methods=['GET'])
 def display_file():
     file_name = request.args.get('file')
     if file_name:
@@ -87,4 +87,4 @@ def display_file():
     return jsonify(success=False, message='File not found'), 404
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    application.run(host='0.0.0.0', port=5000, debug=True)
