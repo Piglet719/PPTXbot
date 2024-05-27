@@ -70,7 +70,7 @@ const handleFileUpload = async () => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await axios.post('http://127.0.0.1:5000/api/upload_file', formData);
+      const response = await axios.post('http://127.0.0.1:8080/api/upload_file', formData);
       console.log(response.data);
       emitChangeContentType(2);
     } catch (error) {
@@ -93,7 +93,7 @@ const handlePPTUpload = async () => {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await axios.post('http://127.0.0.1:5000/api/upload_file', formData);
+      const response = await axios.post('http://127.0.0.1:8080/api/upload_file', formData);
       console.log(response.data);
       emitChangeContentType(3);
     } catch (error) {

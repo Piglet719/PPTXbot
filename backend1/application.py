@@ -87,4 +87,4 @@ def display_file():
     return jsonify(success=False, message='File not found'), 404
 
 if __name__ == "__main__":
-    application.run(host='0.0.0.0', port=5000, debug=True)
+    application.run(host='0.0.0.0', port=8080, debug=True)

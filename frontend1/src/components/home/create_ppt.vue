@@ -68,7 +68,7 @@ const emitChangeContentType = (type) => {
 const generateFile = async () => {
   try {
     emitChangeContentType(4);
-    const response = await axios.post('http://127.0.0.1:5000/api/create_ppt', {
+    const response = await axios.post('http://127.0.0.1:8080/api/create_ppt', {
       selectedOptions: selectedOptions.value
     }, {
       responseType: 'blob'
@@ -89,9 +89,9 @@ const generateFile = async () => {
 
 const viewRecentPDF = async () => {
   try {
-    const response = await axios.get('http://127.0.0.1:5000/api/recent_file');
+    const response = await axios.get('http://127.0.0.1:8080/api/recent_file');
     if (response.data.filename) {
-      const fileUrl = `http://127.0.0.1:5000/api/display_file?file=${response.data.filename}`;
+      const fileUrl = `http://127.0.0.1:8080/api/display_file?file=${response.data.filename}`;
       window.open(fileUrl, '_blank');
     } else {
       alert('沒有找到最近的PDF文件');

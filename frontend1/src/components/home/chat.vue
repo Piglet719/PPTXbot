@@ -33,7 +33,7 @@ const sendQuestion = async () => {
     messages.value.push({ role: 'user', content: question.value });
     
     try {
-      const response = await axios.post('http://127.0.0.1:5000/api/chat', { prompt: question.value });
+      const response = await axios.post('http://127.0.0.1:8080/api/chat', { prompt: question.value });
       console.log('Response from backend:', response.data); 
       if (response.data.success && response.data.messages) {
         // 将助手的消息添加到messages
